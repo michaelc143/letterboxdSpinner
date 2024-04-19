@@ -15,3 +15,9 @@ To run the linter, run the following command:
 ```bash
 pylint letterboxd_spinner.py
 ```
+
+To install the dependencies, run the following command:
+
+```bash
+pip install -r requirements.txt
+```
