@@ -17,6 +17,10 @@ def get_watchlist(username):
     movie_titles = [movie.find('img')['alt'] for movie in movies]
     return movie_titles
 
+def get_all_movies(username):
+    """Get all movies from a Letterboxd user's watchlist."""
+    return get_watchlist(username)
+
 def select_random_movie(watchlist):
     """Randomly select a movie from a Letterboxd user's watchlist."""
     return random.choice(watchlist)
@@ -34,6 +38,16 @@ def random_movie():
         return jsonify({"username": selected_username, "random_movie": randomly_selected_movie})
 
     return jsonify({"error": "No watchlist found for this user."}), 404
+
+@app.route('/all_movies', methods=['GET'])
+def all_movies():
+    """Flask route to get all movies from a Letterboxd user's watchlist."""
+    selected_username = request.args.get('username')
+    if not selected_username:
+        return jsonify({"error": "Username parameter is missing"}), 400
+
+    all_movies = get_all_movies(selected_username)
+    return jsonify({"username": selected_username, "movies": all_movies})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)

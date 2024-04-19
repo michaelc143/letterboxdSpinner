@@ -1,17 +1,33 @@
-// src/components/RandomMovie.tsx
-
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, ChangeEvent } from 'react';
 
 const RandomMovie: React.FC = () => {
   const [username, setUsername] = useState<string>('');
+  const [movies, setMovies] = useState<string[]>([]);
   const [randomMovie, setRandomMovie] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setUsername(event.target.value);
   };
 
-  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleAllMoviesClick = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/all_movies?username=${username}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setMovies(data.movies);
+      setRandomMovie(null);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+      setMovies([]);
+      setError('Error fetching movies. Please try again.');
+    }
+  };
+
+  const handleRandomMovieClick = async () => {
     try {
       const response = await fetch(`http://localhost:5000/random_movie?username=${username}`);
       if (!response.ok) {
@@ -19,22 +35,38 @@ const RandomMovie: React.FC = () => {
       }
       const data = await response.json();
       setRandomMovie(data.random_movie);
+      setMovies([]);
+      setError(null);
     } catch (error) {
       console.error('Error fetching random movie:', error);
+      setRandomMovie(null);
+      setError('Error fetching random movie. Please try again.');
     }
   };
 
   return (
     <div>
-      <h2>Random Movie</h2>
-      <form onSubmit={handleFormSubmit}>
+      <h2>Watchlist Movies</h2>
+      <form onSubmit={(e) => e.preventDefault()}>
         <label>
           Username:
           <input type="text" value={username} onChange={handleUsernameChange} />
         </label>
-        <button type="submit">Get Random Movie</button>
       </form>
-      {randomMovie && <p>{randomMovie}</p>}
+      <button onClick={handleAllMoviesClick}>Get All Movies</button>
+      <button onClick={handleRandomMovieClick}>Get Random Movie</button>
+      {error && <p>{error}</p>}
+      {randomMovie && <p>Random movie: {randomMovie}</p>}
+      {movies.length > 0 && (
+        <div>
+          <h3>All Movies</h3>
+          <ul>
+            {movies.map((movie, index) => (
+              <li key={index}>{movie}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
