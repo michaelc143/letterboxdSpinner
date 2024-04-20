@@ -60,8 +60,8 @@ def all_movies():
     if not selected_username:
         return jsonify({"error": "Username parameter is missing"}), 400
 
-    all_movies = get_all_movies(selected_username)
-    return jsonify({"username": selected_username, "movies": all_movies})
+    all_selected_movies = get_all_movies(selected_username)
+    return jsonify({"username": selected_username, "movies": all_selected_movies})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
