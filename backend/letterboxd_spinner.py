@@ -1,8 +1,8 @@
 """Python script to randomly select a movie from a Letterboxd user's watchlist."""
 import random
-import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from selenium import webdriver
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
@@ -11,11 +11,25 @@ CORS(app)
 def get_watchlist(username):
     """Get the watchlist of a Letterboxd user."""
     url = f'https://letterboxd.com/{username}/watchlist/'
-    response = requests.get(url, timeout=10)
-    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Use headless browser (Chrome in this example)
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    driver = webdriver.Chrome(options=options)
+
+    driver.get(url)
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
     movies = soup.find_all('li', class_='poster-container')
-    movie_titles = [movie.find('img')['alt'] for movie in movies]
-    return movie_titles
+
+    watchlist = []
+    for movie in movies:
+        title = movie.find('img')['alt']
+        image = movie.find('img')['src']
+        watchlist.append({'title': title, 'image': image})
+
+    driver.quit()
+    return watchlist
 
 def get_all_movies(username):
     """Get all movies from a Letterboxd user's watchlist."""
